@@ -54,7 +54,8 @@ export default function Contact() {
         {/* download faz o browser baixar o PDF em vez de abrir no browser. */}
         <a
           href="/docs/curriculo-kefilwe-lourenco.pdf"
-          download
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-[0.82rem]"
           style={{ color: "var(--color-accent)" }}
         >
