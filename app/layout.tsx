@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Public_Sans, JetBrains_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import ThemeProvider from "@/components/ThemeProvider";
 import CursorDot from "@/components/CursorDot";
 import "./globals.css";
@@ -67,6 +68,7 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
       </body>
+      <GoogleAnalytics gaId="G-HB2ZVTBLNG" />
     </html>
   );
 }
