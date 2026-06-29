@@ -23,6 +23,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://kefilwe.dev"),
   title: "Kefilwe Lourenço — Desenvolvedor Full Stack",
   description:
     "Desenvolvedor Full Stack JavaScript com experiência em React, TypeScript e NestJS. Também instrutor de tecnologia desde 2019. Disponível para oportunidades que conectem tecnologia e pessoas.",
@@ -30,9 +31,21 @@ export const metadata: Metadata = {
     title: "Kefilwe Lourenço — Desenvolvedor Full Stack",
     description:
       "Desenvolvedor Full Stack JavaScript com experiência em React, TypeScript e NestJS. Também instrutor de tecnologia desde 2019.",
+    url: "https://kefilwe.dev",
+    siteName: "Kefilwe Lourenço",
     locale: "pt_BR",
     type: "website",
     images: [{ url: "/images/kefilwe.jpg", width: 800, height: 1000, alt: "Kefilwe Lourenço" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kefilwe Lourenço — Desenvolvedor Full Stack",
+    description:
+      "Desenvolvedor Full Stack JavaScript com experiência em React, TypeScript e NestJS. Também instrutor de tecnologia desde 2019.",
+    images: ["/images/kefilwe.jpg"],
+  },
+  alternates: {
+    canonical: "https://kefilwe.dev",
   },
 };
 
