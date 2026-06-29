@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400">
+  <!-- Forma externa — paralelo grama escura -->
+  <polygon points="88,28 472,28 462,48 434,48 434,62 468,62 408,372 22,372" fill="#0A0E0C"/>
+
+  <!-- Borda branca externa -->
+  <polygon points="88,28 472,28 462,48 434,48 434,62 468,62 408,372 22,372"
+    fill="none" stroke="#E2E8DF" stroke-width="14" stroke-linejoin="round"/>
+
+  <!-- K — haste vertical -->
+  <rect x="102" y="68" width="32" height="264" fill="#E2E8DF"/>
+
+  <!-- K — diagonal superior -->
+  <polygon points="134,192 244,68 284,68 174,192" fill="#E2E8DF"/>
+
+  <!-- K — diagonal inferior (com recuo para o triângulo) -->
+  <polygon points="134,212 244,332 284,332 174,212" fill="#E2E8DF"/>
+
+  <!-- Triângulo verde (accent) -->
+  <polygon points="178,172 244,212 178,212" fill="#92B87C"/>
+
+  <!-- F — haste vertical -->
+  <rect x="296" y="68" width="32" height="264" fill="#E2E8DF"/>
+
+  <!-- F — barra superior -->
+  <rect x="296" y="68" width="138" height="32" fill="#E2E8DF"/>
+
+  <!-- F — barra do meio -->
+  <rect x="296" y="180" width="96" height="30" fill="#E2E8DF"/>
+</svg>
