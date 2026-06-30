@@ -1,4 +1,4 @@
-# Kefilwe Lourenço — Portfólio v2.0
+# Kefilwe Lourenço — Portfólio v2.1
 
 > Tecnologia para pessoas.
 
@@ -10,13 +10,11 @@ A resposta foi tratar a página como uma narrativa, não como um menu.
 
 ## Sobre este projeto
 
-Essa é a **versão 2.0** do meu portfólio. A primeira versão era um site estático simples, com a estrutura clássica de "cards de projeto" — funcional, mas genérico, do tipo que qualquer dev júnior monta seguindo um tutorial.
+Essa é a **versão 2.1** do meu portfólio, evoluída a partir da v2.0.
 
-Essa versão é um experimento de design e de engenharia ao mesmo tempo:
+A primeira versão era um site estático simples, com a estrutura clássica de "cards de projeto" — funcional, mas genérico, do tipo que qualquer dev júnior monta seguindo um tutorial.
 
-- **Design**: em vez de grids e cards repetidos, a página é lida como uma composição editorial — quase uma revista. Cada seção é um "parágrafo" visual, não uma caixa isolada. Isso significou testar (e descartar) vários formatos — grid estático, zigue-zague de cards, lista contínua — até chegar num layout que conta uma história em vez de listar informações.
-
-- **Engenharia**: o front-end é construído com **Next.js (App Router)**, TypeScript e Tailwind CSS, com o conteúdo do site inteiro centralizado em um único arquivo de dados — separado da lógica visual dos componentes, pra eu poder editar texto sem tocar em estilo (e vice-versa).
+A v2.0 foi um experimento de design e engenharia ao mesmo tempo — layout editorial, tema claro/escuro, conteúdo separado da estrutura. A v2.1 adiciona a camada de comunidade: qualquer pessoa que trabalhou comigo pode enviar uma recomendação diretamente pelo site, com moderação manual antes de publicar.
 
 ## Por que essa paleta
 
@@ -32,31 +30,37 @@ As cores são definidas como CSS custom properties em `globals.css` — isso gar
 
 ```
 app/
-  layout.tsx          → metadata, fontes (Space Grotesk, Public Sans, JetBrains Mono), OpenGraph
-  page.tsx            → ordem das seções da página
-  globals.css         → tokens de design (cores, espaçamento) em CSS custom properties
-  icon.svg            → favicon (logo KF)
+  layout.tsx              → metadata, fontes, OpenGraph
+  page.tsx                → ordem das seções da página
+  globals.css             → tokens de design em CSS custom properties
+  icon.svg                → favicon (logo KF)
+  recomendar/
+    page.tsx              → rota /recomendar com formulário de recomendação
+    actions.ts            → Server Action: validação, rate limit, Supabase, Resend
 
 components/
-  Header.tsx          → marca + alternância de tema claro/escuro
-  Hero.tsx            → abertura, com foto de perfil em tratamento editorial
-  Process.tsx         → como eu trabalho (Compreender → Estruturar → Construir)
-  PhotoStory.tsx      → componente reutilizável de foto + texto editorial
-                        (usado em 3 seções diferentes da página)
-  ProjectChapter.tsx  → projeto em destaque, narrado, não em formato card
-  TrajectoryStack.tsx → trajetória profissional + stack técnico por época
-  Contact.tsx         → contato
-  CursorDot.tsx       → bolinha animada no cursor, some sobre texto, respeita prefers-reduced-motion
-  ThemeToggle.tsx     → botão de alternância claro/escuro
-  ThemeProvider.tsx   → wrapper do next-themes, define modo escuro como padrão
+  Header.tsx              → marca + alternância de tema claro/escuro
+  Hero.tsx                → abertura, com foto de perfil em tratamento editorial
+  Process.tsx             → como eu trabalho (Compreender → Estruturar → Construir)
+  PhotoStory.tsx          → componente reutilizável de foto + texto editorial
+  ProjectChapter.tsx      → projeto em destaque, narrado, não em formato card
+  TrajectoryStack.tsx     → trajetória profissional + stack técnico por época
+  Recommendations.tsx     → Server Component: lista recomendações aprovadas do Supabase
+  RecommendForm.tsx       → formulário de recomendação com avatar customizável
+  Avatar.tsx              → avatar SVG gerado dinamicamente (3 estilos × 5 tons de pele)
+  AvatarPicker.tsx        → seletor interativo de estilo de cabelo e tom de pele
+  Contact.tsx             → contato
+  CursorDot.tsx           → bolinha animada no cursor, respeita prefers-reduced-motion
+  ThemeToggle.tsx         → botão de alternância claro/escuro
+  ThemeProvider.tsx       → wrapper do next-themes, define modo escuro como padrão
 
 lib/
-  data.ts             → todo o conteúdo (textos, links, dados) do site,
-                        separado dos componentes
+  data.ts                 → todo o conteúdo (textos, links, dados) do site
+  supabase.ts             → cliente Supabase server-only (service role, import "server-only")
 
 public/
-  images/             → fotos editoriais (.webp, .jpg) e prints de projetos
-  docs/               → currículo em PDF
+  images/                 → fotos editoriais (.webp, .jpg) e prints de projetos
+  docs/                   → currículo em PDF
 ```
 
 ### Stack técnico
@@ -68,28 +72,71 @@ public/
 | Estilo | Tailwind CSS + CSS custom properties |
 | Tipografia | Space Grotesk · Public Sans · JetBrains Mono |
 | Tema | next-themes (modo escuro como padrão) |
-| Ícones de stack | Simple Icons (CDN) |
+| Banco de dados | Supabase (PostgreSQL + RLS) |
+| E-mail | Resend |
+| Validação | Zod |
 | Deploy | Vercel |
+
+### O que é novo na v2.1 — Sistema de Recomendações
+
+A v2.1 adiciona um fluxo completo de recomendações de colegas e ex-alunos, sem dependência de plataformas externas como LinkedIn.
+
+**Fluxo:**
+1. Visitante acessa `/recomendar`, preenche o formulário e escolhe um avatar personalizado
+2. A recomendação é salva no Supabase com `approved = false`
+3. Recebo uma notificação por e-mail via Resend
+4. Após aprovação manual no painel do Supabase (`approved = true`), o depoimento aparece na seção "Na voz de quem conhece"
+
+**Avatar customizável:**
+- 3 estilos de cabelo: Liso, Crespo, Locs
+- 5 tons de pele: Branca, Amarela, Morena, Parda, Retinta
+- Avatar SVG gerado inteiramente no cliente, sem imagens externas
+- Preview em tempo real conforme a seleção muda
+
+**Segurança implementada:**
+- `import "server-only"` em `lib/supabase.ts` — chave de serviço nunca vaza para o cliente
+- Honeypot anti-bot (campo oculto `website`)
+- Rate limiting: máximo 3 envios por IP por hora, verificado via Supabase
+- IP armazenado apenas como SHA-256 hash — nunca o IP real
+- Validação com Zod no servidor (sanitização de HTML em todos os campos de texto)
+- RLS no Supabase: leitura pública apenas de `approved = true`; inserção permitida; update/delete bloqueados
+- Regex estrita para URL do LinkedIn
 
 ### Decisões técnicas que valem ser destacadas
 
-- **Conteúdo separado de componente.** Nenhum componente tem texto fixo em português direto no JSX — tudo vem de `lib/data.ts`. Isso significa que eu posso editar o conteúdo do site inteiro sem tocar em uma linha de CSS ou de lógica, e vice-versa.
+- **Conteúdo separado de componente.** Nenhum componente tem texto fixo em português direto no JSX — tudo vem de `lib/data.ts`.
 
-- **Um componente, vários usos.** `PhotoStory.tsx` é usado nas três seções de foto+texto da página (aula presencial, aula remota e o depoimento de uma aluna), recebendo dados diferentes via props — em vez de copiar e colar o mesmo bloco de JSX três vezes com pequenas variações. A prop `reverse` inverte a ordem foto/texto para alternar o ritmo visual.
+- **Um componente, vários usos.** `PhotoStory.tsx` é usado nas três seções de foto+texto da página, recebendo dados diferentes via props. A prop `reverse` inverte a ordem foto/texto para alternar o ritmo visual.
 
-- **Capítulo único em vez de grid de cards.** A seção de projeto em destaque (`ProjectChapter.tsx`) narra o PeopleCore em texto corrido, com os outros projetos citados como links inline — uma escolha editorial deliberada, não a estrutura padrão de "cards de portfólio".
+- **Capítulo único em vez de grid de cards.** A seção de projeto em destaque (`ProjectChapter.tsx`) narra o PeopleCore em texto corrido — uma escolha editorial deliberada.
 
-- **Imagens otimizadas em dois níveis.** Os arquivos estão em WebP (comprimidos com `sharp` antes do deploy — `presencial.png` caiu de 4,9 MB para 142 KB). Em runtime, o componente `<Image>` do Next.js serve o tamanho exato para cada dispositivo via `sizes`.
+- **Imagens otimizadas em dois níveis.** Os arquivos estão em WebP (comprimidos com `sharp` — `presencial.png` caiu de 4,9 MB para 142 KB). Em runtime, o `<Image>` do Next.js serve o tamanho exato para cada dispositivo via `sizes`.
 
-- **Cursor dot acessível.** A bolinha verde que segue o mouse usa `requestAnimationFrame` para não travar o scroll, some automaticamente sobre texto legível, e é completamente desativada se o sistema operacional do usuário tiver "reduzir movimento" ativado (`prefers-reduced-motion`).
+- **Cursor dot acessível.** A bolinha verde usa `requestAnimationFrame`, some sobre texto legível, e é desativada com `prefers-reduced-motion`.
 
-> O PeopleCore — projeto em destaque nesta página — é onde entram decisões de back-end como segurança com JWT e fallback de rotas na Vercel. Esse portfólio em si é um site estático front-end, sem back-end próprio.
+- **Server Action com `useActionState`.** O formulário de recomendação não usa fetch manual — toda a comunicação cliente↔servidor passa pela Server Action `submitRecommendation`, com estado gerenciado pelo hook `useActionState` do React 19.
+
+- **Recomendações como Server Component.** `Recommendations.tsx` busca os dados diretamente no Supabase no servidor, sem estado no cliente, sem loading spinner, sem SWR.
 
 ## O que esse projeto representa pra mim
 
 Sou instrutor de tecnologia e inclusão digital desde 2019, e estou cursando Psicologia em paralelo à minha formação Full Stack pela Generation Brasil. Esse portfólio é o primeiro projeto em que tentei, de propósito, trazer essas três coisas pra um lugar só: a parte técnica, a didática de quem já ensina, e a atenção a como uma pessoa real vai sentir a experiência de usar o que eu construí — não só se vai "funcionar".
 
 Ainda sou júnior, e esse projeto também é um registro de aprendizado: a estrutura mudou várias vezes até eu entender o que realmente significava "componentizar" — não é só dividir HTML em arquivos diferentes, é separar o que muda (conteúdo) do que não muda (estrutura/visual).
+
+## Variáveis de ambiente
+
+Crie um arquivo `.env.local` na raiz do projeto com as seguintes variáveis:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+RESEND_API_KEY=
+RECOMMENDATIONS_EMAIL_TO=
+```
+
+Consulte `.env.local.example` para referência. Nunca exponha `SUPABASE_SERVICE_ROLE_KEY` ou `RESEND_API_KEY` no cliente.
 
 ## Rodando localmente
 
@@ -112,16 +159,18 @@ Descubra seu IP local com `ipconfig` (Windows) e acesse `http://<seu-ip>:3000`.
 
 1. Suba o projeto para um repositório no GitHub.
 2. Em vercel.com → "Add New Project" → importe o repositório.
-3. A Vercel detecta Next.js automaticamente — não precisa configurar nada.
-4. Cada push na branch principal gera um novo deploy automático.
+3. Adicione as variáveis de ambiente no painel da Vercel (Settings → Environment Variables).
+4. A Vercel detecta Next.js automaticamente — não precisa configurar mais nada.
+5. Cada push na branch principal gera um novo deploy automático.
 
 ## Acessibilidade
 
 - Skip link ("Pular para o conteúdo") e foco visível em todos os elementos interativos
 - Hierarquia de headings coerente (h1 → h2 → h3), sem saltos
 - Contraste AA verificado nos dois temas
-- HTML semântico (`<main>`, `<section>`, `aria-labelledby`, headings ocultos com `sr-only` quando o título visual já existe em outro elemento)
+- HTML semântico (`<main>`, `<section>`, `aria-labelledby`, headings ocultos com `sr-only`)
 - Cursor dot desativado via `prefers-reduced-motion`
+- Formulário de recomendação com `aria-label` e labels visíveis em todos os campos
 
 ## Contato
 

@@ -5,6 +5,7 @@ import PhotoStory from "@/components/PhotoStory";
 import ProjectChapter from "@/components/ProjectChapter";
 import TrajectoryStack from "@/components/TrajectoryStack";
 import Contact from "@/components/Contact";
+import Recommendations from "@/components/Recommendations";
 import Footer from "@/components/Footer";
 import { photoStories, testimonial } from "@/lib/data";
 
@@ -40,6 +41,7 @@ export default function Home() {
         <PhotoStory {...testimonial} />
         <ProjectChapter />
         <TrajectoryStack />
+        <Recommendations />
         <Contact />
       </main>
       <Footer />

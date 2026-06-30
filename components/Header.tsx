@@ -31,7 +31,8 @@ export default function Header() {
         }`}
       >
         <a
-          href="#inicio"
+          href="/#inicio"
+          aria-label="Voltar ao início do portfólio"
           className="font-display text-[1.1rem] font-semibold tracking-tight"
         >
           Kefilwe <span style={{ color: "var(--color-accent)" }}>L.</span>
