@@ -25,10 +25,12 @@ export default function CursorDot() {
   const dotRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
-  // Respeita prefers-reduced-motion (acessibilidade WCAG 2.1).
-  // Se o usuário configurou "reduzir movimento" no sistema, a bolinha não aparece.
   const [reduced, setReduced] = useState(false);
+  const [hasPointer, setHasPointer] = useState(false);
   useEffect(() => {
+    // Só ativa em dispositivos com ponteiro preciso (mouse). Touch/stylus não ativam.
+    setHasPointer(window.matchMedia("(pointer: fine)").matches);
+
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReduced(mq.matches);
     const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
@@ -37,7 +39,7 @@ export default function CursorDot() {
   }, []);
 
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || !hasPointer) return;
 
     const dot = dotRef.current;
     if (!dot) return;
@@ -73,7 +75,7 @@ export default function CursorDot() {
     };
   }, [reduced]);
 
-  if (reduced) return null;
+  if (reduced || !hasPointer) return null;
 
   return (
     <div
