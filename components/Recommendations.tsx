@@ -24,6 +24,7 @@ async function getRecommendations(): Promise<Recommendation[]> {
     console.error("Supabase fetch error:", error);
     return [];
   }
+
   return data ?? [];
 }
 

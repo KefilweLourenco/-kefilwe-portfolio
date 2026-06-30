@@ -1,9 +1,21 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import AvatarPicker from "@/components/AvatarPicker";
 import { submitRecommendation, FormState } from "@/app/recomendar/actions";
 import type { AvatarStyle, SkinTone } from "@/components/Avatar";
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: HTMLElement, options: Record<string, unknown>) => string;
+      remove: (widgetId: string) => void;
+    };
+    onloadTurnstileCallback?: () => void;
+  }
+}
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 const initialState: FormState = { status: "idle" };
 
@@ -65,6 +77,43 @@ function RecommendationForm({
   onStyleChange,
   onSkinChange,
 }: RecommendationFormProps) {
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetId = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Sem sitekey configurada (dev local sem .env) — widget não renderiza,
+    // Server Action deixa passar (ver actions.ts).
+    if (!TURNSTILE_SITE_KEY) return;
+
+    let destroyed = false;
+
+    const doRender = () => {
+      if (destroyed || !window.turnstile || !turnstileRef.current) return;
+      if (widgetId.current) {
+        try { window.turnstile.remove(widgetId.current); } catch { /* ignore */ }
+      }
+      widgetId.current = window.turnstile.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        theme: "dark",
+      });
+    };
+
+    if (window.turnstile) {
+      // Script já estava carregado quando o componente montou
+      doRender();
+    } else {
+      // Script ainda carregando — registra callback ANTES dele terminar
+      window.onloadTurnstileCallback = doRender;
+    }
+
+    return () => {
+      destroyed = true;
+      if (widgetId.current && window.turnstile) {
+        try { window.turnstile.remove(widgetId.current); } catch { /* ignore */ }
+      }
+    };
+  }, []);
+
   return (
     <form action={action} className="flex flex-col gap-6 max-w-lg mx-auto">
       <div className="mb-4">
@@ -167,6 +216,9 @@ function RecommendationForm({
           Ajuda visitantes e recrutadores a conhecerem quem escreveu a recomendação.
         </p>
       </div>
+
+      {/* Turnstile widget — renderizado via JS explícito após hidratação */}
+      <div ref={turnstileRef} />
 
       {error && (
         <p className="text-[0.8rem]" style={{ color: "#E05555" }}>

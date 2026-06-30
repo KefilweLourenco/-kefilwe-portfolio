@@ -44,6 +44,28 @@ export type FormState =
   | { status: "success" }
   | { status: "error"; message: string };
 
+async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        secret:   process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY!,
+        response: token,
+        remoteip: ip,
+      }),
+    });
+    const data = (await res.json()) as { success: boolean; "error-codes"?: string[] };
+    if (!data.success) {
+      console.error("[turnstile] falhou:", data["error-codes"]);
+    }
+    return data.success === true;
+  } catch (err) {
+    console.error("[turnstile] request falhou:", err);
+    return false;
+  }
+}
+
 export async function submitRecommendation(
   _prev: FormState,
   formData: FormData,
@@ -53,12 +75,27 @@ export async function submitRecommendation(
     return { status: "success" };
   }
 
-  // rate limit: máximo 3 envios por IP por hora
+  // Turnstile — verificação anti-bot via Cloudflare
   const headersList = await headers();
   const rawIp =
     headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     headersList.get("x-real-ip") ??
     "unknown";
+
+  // Turnstile — obrigatório em produção, ignorado em dev sem a secret key
+  const secretKey = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+  if (secretKey) {
+    const turnstileToken = formData.get("cf-turnstile-response");
+    if (!turnstileToken || typeof turnstileToken !== "string") {
+      return { status: "error", message: "Verificação de segurança inválida. Tente novamente." };
+    }
+    const turnstileOk = await verifyTurnstile(turnstileToken, rawIp);
+    if (!turnstileOk) {
+      return { status: "error", message: "Verificação de segurança falhou. Tente novamente." };
+    }
+  }
+
+  // rate limit: máximo 3 envios por IP por hora
   const ipHash = hashIp(rawIp);
 
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
