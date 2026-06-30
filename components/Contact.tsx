@@ -66,7 +66,7 @@ export default function Contact() {
           <Link
             href="/recomendar"
             className="inline-flex items-center gap-1.5 text-[0.82rem]"
-            style={{ color: "var(--color-muted)" }}
+            style={{ color: "var(--color-accent)" }}
           >
             Recomendar →
           </Link>
